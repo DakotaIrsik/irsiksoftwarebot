@@ -1,0 +1,162 @@
+{
+  "roles": [
+    {
+      "name": "Licensee",
+      "color": "#5865F2",
+      "permissions": ["ViewChannel", "SendMessages", "ReadMessageHistory", "AttachFiles", "EmbedLinks"],
+      "mentionable": true,
+      "hoist": true
+    }
+  ],
+  "categories": [
+    {
+      "name": "📢 GENERAL",
+      "channels": [
+        {
+          "name": "announcements",
+          "type": "text",
+          "permissions": [
+            {
+              "role": "@everyone",
+              "allow": ["ViewChannel", "ReadMessageHistory"],
+              "deny": ["SendMessages"]
+            }
+          ]
+        },
+        {
+          "name": "general",
+          "type": "text"
+        },
+        {
+          "name": "introductions",
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "name": "🌊 QiFlowGo",
+      "description": "Public Project - Mobile Control Center",
+      "channels": [
+        {
+          "name": "qiflowgo-general",
+          "type": "text",
+          "topic": "General discussion about QiFlowGo"
+        },
+        {
+          "name": "qiflowgo-feature-requests",
+          "type": "text",
+          "topic": "Request features for QiFlowGo - Tag the bot to create GitHub issues"
+        },
+        {
+          "name": "qiflowgo-bug-reports",
+          "type": "text",
+          "topic": "Report bugs - Tag the bot to create GitHub issues"
+        },
+        {
+          "name": "qiflowgo-commits",
+          "type": "text",
+          "topic": "Automated commit feed from GitHub",
+          "permissions": [
+            {
+              "role": "@everyone",
+              "allow": ["ViewChannel", "ReadMessageHistory"],
+              "deny": ["SendMessages"]
+            }
+          ]
+        },
+        {
+          "name": "qiflowgo-releases",
+          "type": "text",
+          "topic": "Automated release announcements from GitHub",
+          "permissions": [
+            {
+              "role": "@everyone",
+              "allow": ["ViewChannel", "ReadMessageHistory"],
+              "deny": ["SendMessages"]
+            }
+          ]
+        },
+        {
+          "name": "qiflowgo-discussions",
+          "type": "text",
+          "topic": "Community discussions about QiFlowGo"
+        }
+      ]
+    },
+    {
+      "name": "🔒 QiFlow",
+      "description": "Private Project - Licensee Only",
+      "permissions": [
+        {
+          "role": "@everyone",
+          "deny": ["ViewChannel"]
+        },
+        {
+          "role": "Licensee",
+          "allow": ["ViewChannel", "SendMessages", "ReadMessageHistory"]
+        }
+      ],
+      "channels": [
+        {
+          "name": "qiflow-general",
+          "type": "text",
+          "topic": "General discussion about QiFlow (Licensee only)"
+        },
+        {
+          "name": "qiflow-feature-requests",
+          "type": "text",
+          "topic": "Request features for QiFlow - Tag the bot to create GitHub issues"
+        },
+        {
+          "name": "qiflow-bug-reports",
+          "type": "text",
+          "topic": "Report bugs - Tag the bot to create GitHub issues"
+        },
+        {
+          "name": "qiflow-commits",
+          "type": "text",
+          "topic": "Automated commit feed from GitHub",
+          "permissions": [
+            {
+              "role": "Licensee",
+              "allow": ["ViewChannel", "ReadMessageHistory"],
+              "deny": ["SendMessages"]
+            }
+          ]
+        },
+        {
+          "name": "qiflow-releases",
+          "type": "text",
+          "topic": "Automated release announcements from GitHub",
+          "permissions": [
+            {
+              "role": "Licensee",
+              "allow": ["ViewChannel", "ReadMessageHistory"],
+              "deny": ["SendMessages"]
+            }
+          ]
+        },
+        {
+          "name": "qiflow-support",
+          "type": "text",
+          "topic": "Direct support for QiFlow licensees"
+        }
+      ]
+    },
+    {
+      "name": "🛠️ SUPPORT",
+      "channels": [
+        {
+          "name": "help",
+          "type": "text",
+          "topic": "Get help with irsik software products"
+        },
+        {
+          "name": "community-support",
+          "type": "text",
+          "topic": "Community members helping each other"
+        }
+      ]
+    }
+  ]
+}
