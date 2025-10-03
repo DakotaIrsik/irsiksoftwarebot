@@ -3,7 +3,24 @@
     {
       "name": "Licensee",
       "color": "#5865F2",
-      "permissions": ["ViewChannel", "SendMessages", "ReadMessageHistory", "AttachFiles", "EmbedLinks"],
+      "permissions": [
+        "ViewChannel",
+        "SendMessages",
+        "ReadMessageHistory",
+        "AttachFiles",
+        "EmbedLinks"
+      ],
+      "mentionable": true,
+      "hoist": true
+    },
+    {
+      "name": "Founder",
+      "color": "#00FF00",
+      "permissions": [
+        "ViewChannel",
+        "SendMessages",
+        "ReadMessageHistory"
+      ],
       "mentionable": true,
       "hoist": true
     }
@@ -11,15 +28,41 @@
   "categories": [
     {
       "name": "📢 GENERAL",
+      "permissions": [
+        {
+          "role": "Founder",
+          "allow": [
+            "ViewChannel",
+            "SendMessages",
+            "ReadMessageHistory",
+            "ManageChannels",
+            "ManageMessages"
+          ]
+        }
+      ],
       "channels": [
         {
           "name": "announcements",
           "type": "text",
           "permissions": [
             {
+              "role": "Founder",
+              "allow": [
+                "ViewChannel",
+                "SendMessages",
+                "ReadMessageHistory",
+                "ManageMessages"
+              ]
+            },
+            {
               "role": "@everyone",
-              "allow": ["ViewChannel", "ReadMessageHistory"],
-              "deny": ["SendMessages"]
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
             }
           ]
         },
@@ -36,6 +79,18 @@
     {
       "name": "🌊 QiFlowGo",
       "description": "Public Project - Mobile Control Center",
+      "permissions": [
+        {
+          "role": "Founder",
+          "allow": [
+            "ViewChannel",
+            "SendMessages",
+            "ReadMessageHistory",
+            "ManageChannels",
+            "ManageMessages"
+          ]
+        }
+      ],
       "channels": [
         {
           "name": "qiflowgo-general",
@@ -58,9 +113,23 @@
           "topic": "Automated commit feed from GitHub",
           "permissions": [
             {
+              "role": "Founder",
+              "allow": [
+                "ViewChannel",
+                "SendMessages",
+                "ReadMessageHistory",
+                "ManageMessages"
+              ]
+            },
+            {
               "role": "@everyone",
-              "allow": ["ViewChannel", "ReadMessageHistory"],
-              "deny": ["SendMessages"]
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
             }
           ]
         },
@@ -70,9 +139,23 @@
           "topic": "Automated release announcements from GitHub",
           "permissions": [
             {
+              "role": "Founder",
+              "allow": [
+                "ViewChannel",
+                "SendMessages",
+                "ReadMessageHistory",
+                "ManageMessages"
+              ]
+            },
+            {
               "role": "@everyone",
-              "allow": ["ViewChannel", "ReadMessageHistory"],
-              "deny": ["SendMessages"]
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
             }
           ]
         },
@@ -89,11 +172,27 @@
       "permissions": [
         {
           "role": "@everyone",
-          "deny": ["ViewChannel"]
+          "deny": [
+            "ViewChannel"
+          ]
+        },
+        {
+          "role": "Founder",
+          "allow": [
+            "ViewChannel",
+            "SendMessages",
+            "ReadMessageHistory",
+            "ManageChannels",
+            "ManageMessages"
+          ]
         },
         {
           "role": "Licensee",
-          "allow": ["ViewChannel", "SendMessages", "ReadMessageHistory"]
+          "allow": [
+            "ViewChannel",
+            "SendMessages",
+            "ReadMessageHistory"
+          ]
         }
       ],
       "channels": [
@@ -119,8 +218,13 @@
           "permissions": [
             {
               "role": "Licensee",
-              "allow": ["ViewChannel", "ReadMessageHistory"],
-              "deny": ["SendMessages"]
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
             }
           ]
         },
@@ -131,8 +235,13 @@
           "permissions": [
             {
               "role": "Licensee",
-              "allow": ["ViewChannel", "ReadMessageHistory"],
-              "deny": ["SendMessages"]
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
             }
           ]
         },
@@ -145,6 +254,18 @@
     },
     {
       "name": "🛠️ SUPPORT",
+      "permissions": [
+        {
+          "role": "Founder",
+          "allow": [
+            "ViewChannel",
+            "SendMessages",
+            "ReadMessageHistory",
+            "ManageChannels",
+            "ManageMessages"
+          ]
+        }
+      ],
       "channels": [
         {
           "name": "help",
@@ -155,6 +276,376 @@
           "name": "community-support",
           "type": "text",
           "topic": "Community members helping each other"
+        }
+      ]
+    },
+    {
+      "name": "📦 LogSmith",
+      "description": "Public Project",
+      "permissions": [
+        {
+          "role": "Founder",
+          "allow": [
+            "ViewChannel",
+            "SendMessages",
+            "ReadMessageHistory",
+            "ManageChannels",
+            "ManageMessages"
+          ]
+        }
+      ],
+      "channels": [
+        {
+          "name": "logsmith-general",
+          "type": "text",
+          "topic": "General discussion about LogSmith"
+        },
+        {
+          "name": "logsmith-feature-requests",
+          "type": "text",
+          "topic": "Request features for LogSmith - Tag the bot to create GitHub issues"
+        },
+        {
+          "name": "logsmith-bug-reports",
+          "type": "text",
+          "topic": "Report bugs - Tag the bot to create GitHub issues"
+        },
+        {
+          "name": "logsmith-commits",
+          "type": "text",
+          "topic": "Automated commit feed from GitHub",
+          "permissions": [
+            {
+              "role": "Founder",
+              "allow": [
+                "ViewChannel",
+                "SendMessages",
+                "ReadMessageHistory",
+                "ManageMessages"
+              ]
+            },
+            {
+              "role": "@everyone",
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "logsmith-releases",
+          "type": "text",
+          "topic": "Automated release announcements from GitHub",
+          "permissions": [
+            {
+              "role": "Founder",
+              "allow": [
+                "ViewChannel",
+                "SendMessages",
+                "ReadMessageHistory",
+                "ManageMessages"
+              ]
+            },
+            {
+              "role": "@everyone",
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "logsmith-discussions",
+          "type": "text",
+          "topic": "Community discussions about LogSmith"
+        }
+      ]
+    },
+    {
+      "name": "📦 TalkSmith",
+      "description": "Public Project",
+      "permissions": [
+        {
+          "role": "Founder",
+          "allow": [
+            "ViewChannel",
+            "SendMessages",
+            "ReadMessageHistory",
+            "ManageChannels",
+            "ManageMessages"
+          ]
+        }
+      ],
+      "channels": [
+        {
+          "name": "talksmith-general",
+          "type": "text",
+          "topic": "General discussion about TalkSmith"
+        },
+        {
+          "name": "talksmith-feature-requests",
+          "type": "text",
+          "topic": "Request features for TalkSmith - Tag the bot to create GitHub issues"
+        },
+        {
+          "name": "talksmith-bug-reports",
+          "type": "text",
+          "topic": "Report bugs - Tag the bot to create GitHub issues"
+        },
+        {
+          "name": "talksmith-commits",
+          "type": "text",
+          "topic": "Automated commit feed from GitHub",
+          "permissions": [
+            {
+              "role": "Founder",
+              "allow": [
+                "ViewChannel",
+                "SendMessages",
+                "ReadMessageHistory",
+                "ManageMessages"
+              ]
+            },
+            {
+              "role": "@everyone",
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "talksmith-releases",
+          "type": "text",
+          "topic": "Automated release announcements from GitHub",
+          "permissions": [
+            {
+              "role": "Founder",
+              "allow": [
+                "ViewChannel",
+                "SendMessages",
+                "ReadMessageHistory",
+                "ManageMessages"
+              ]
+            },
+            {
+              "role": "@everyone",
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "talksmith-discussions",
+          "type": "text",
+          "topic": "Community discussions about TalkSmith"
+        }
+      ]
+    },
+    {
+      "name": "📦 Jesus",
+      "description": "Private Project - Licensee Only",
+      "permissions": [
+        {
+          "role": "@everyone",
+          "deny": [
+            "ViewChannel"
+          ]
+        },
+        {
+          "role": "Founder",
+          "allow": [
+            "ViewChannel",
+            "SendMessages",
+            "ReadMessageHistory",
+            "ManageChannels",
+            "ManageMessages"
+          ]
+        },
+        {
+          "role": "Licensee",
+          "allow": [
+            "ViewChannel",
+            "SendMessages",
+            "ReadMessageHistory"
+          ]
+        }
+      ],
+      "channels": [
+        {
+          "name": "jesus-general",
+          "type": "text",
+          "topic": "General discussion about Jesus"
+        },
+        {
+          "name": "jesus-feature-requests",
+          "type": "text",
+          "topic": "Request features for Jesus - Tag the bot to create GitHub issues"
+        },
+        {
+          "name": "jesus-bug-reports",
+          "type": "text",
+          "topic": "Report bugs - Tag the bot to create GitHub issues"
+        },
+        {
+          "name": "jesus-commits",
+          "type": "text",
+          "topic": "Automated commit feed from GitHub",
+          "permissions": [
+            {
+              "role": "Founder",
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ]
+            },
+            {
+              "role": "Licensee",
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "jesus-releases",
+          "type": "text",
+          "topic": "Automated release announcements from GitHub",
+          "permissions": [
+            {
+              "role": "Founder",
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ]
+            },
+            {
+              "role": "Licensee",
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "jesus-discussions",
+          "type": "text",
+          "topic": "Community discussions about Jesus"
+        }
+      ]
+    },
+    {
+      "name": "📦 CandyRush",
+      "description": "Public Project",
+      "channels": [
+        {
+          "name": "candyrush-general",
+          "type": "text",
+          "topic": "General discussion about CandyRush"
+        },
+        {
+          "name": "candyrush-feature-requests",
+          "type": "text",
+          "topic": "Request features for CandyRush - Tag the bot to create GitHub issues"
+        },
+        {
+          "name": "candyrush-bug-reports",
+          "type": "text",
+          "topic": "Report bugs - Tag the bot to create GitHub issues"
+        },
+        {
+          "name": "candyrush-commits",
+          "type": "text",
+          "topic": "Automated commit feed from GitHub",
+          "permissions": [
+            {
+              "role": "Founder",
+              "allow": [
+                "ViewChannel",
+                "SendMessages",
+                "ReadMessageHistory",
+                "ManageMessages"
+              ]
+            },
+            {
+              "role": "@everyone",
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "candyrush-releases",
+          "type": "text",
+          "topic": "Automated release announcements from GitHub",
+          "permissions": [
+            {
+              "role": "Founder",
+              "allow": [
+                "ViewChannel",
+                "SendMessages",
+                "ReadMessageHistory",
+                "ManageMessages"
+              ]
+            },
+            {
+              "role": "@everyone",
+              "allow": [
+                "ViewChannel",
+                "ReadMessageHistory"
+              ],
+              "deny": [
+                "SendMessages"
+              ]
+            }
+          ]
+        },
+        {
+          "name": "candyrush-discussions",
+          "type": "text",
+          "topic": "Community discussions about CandyRush"
+        }
+      ],
+      "permissions": [
+        {
+          "role": "Founder",
+          "allow": [
+            "ViewChannel",
+            "SendMessages",
+            "ReadMessageHistory",
+            "ManageChannels",
+            "ManageMessages"
+          ]
         }
       ]
     }
