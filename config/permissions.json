@@ -1,0 +1,36 @@
+{
+  "servers": {
+    "default": {
+      "enabled": false,
+      "commands": []
+    },
+    "1222082585468080148": {
+      "name": "Neon Ladder",
+      "enabled": true,
+      "commands": {
+        "askgpt": {
+          "enabled": true,
+          "channels": ["*"],
+          "roles": ["*"]
+        },
+        "readme": {
+          "enabled": true,
+          "channels": ["*"],
+          "roles": ["*"]
+        },
+        "feature-request": {
+          "enabled": true,
+          "channels": ["*-feature-requests"],
+          "roles": ["*"]
+        },
+        "purge": {
+          "enabled": true,
+          "channels": ["*"],
+          "roles": ["Founder", "Administrator"],
+          "requireAdmin": true
+        }
+      }
+    }
+  },
+  "globalAdminRoles": ["Founder", "Administrator"]
+}

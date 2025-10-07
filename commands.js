@@ -1,9 +1,16 @@
-const { PermissionFlagsBits } = require('discord.js');
+const { PermissionFlagsBits, EmbedBuilder } = require('discord.js');
 const fs = require('fs').promises;
 const path = require('path');
+const { Octokit } = require('@octokit/rest');
 
-const CONFIG_PATH = path.join(__dirname, '../config/discord-structure.json');
-const ENV_PATH = path.join(__dirname, '../.env');
+const CONFIG_PATH = path.join(__dirname, 'config', 'discord-structure.json');
+const ENV_PATH = path.join(__dirname, '.env');
+
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN,
+});
+
+const GITHUB_OWNER = process.env.GITHUB_OWNER || process.env.GITHUB_REPO?.split('/')[0];
 
 // Helper to check if user is admin
 function isAdmin(member) {
@@ -29,7 +36,7 @@ async function addRepoCommand(message, args) {
 
   // Usage: !addrepo <repo-name> [public|private]
   if (args.length < 1) {
-    return message.reply('Usage: `!addrepo <repo-name> [public|private]`\nExample: `!addrepo MyProject` or `!addrepo QiFlow private`');
+    return message.reply('Usage: `!addrepo <repo-name> [public|private]`\nExample: `!addrepo MyProject` or `!addrepo NeonLadder private`');
   }
 
   const repoName = args[0];
@@ -51,7 +58,7 @@ async function addRepoCommand(message, args) {
     // Create new category structure
     const newCategory = {
       name: `📦 ${repoName}`,
-      description: isPrivate ? 'Private Project - Licensee Only' : 'Public Project',
+      description: isPrivate ? 'Private Project' : 'Public Project',
       channels: [
         {
           name: `${prefix}-general`,
@@ -74,19 +81,11 @@ async function addRepoCommand(message, args) {
           topic: 'Automated commit feed from GitHub',
           permissions: isPrivate ? [
             {
-              role: 'Founder',
-              allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory', 'ManageMessages']
-            },
-            {
-              role: 'Licensee',
+              role: '@everyone',
               allow: ['ViewChannel', 'ReadMessageHistory'],
               deny: ['SendMessages']
             }
           ] : [
-            {
-              role: 'Founder',
-              allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory', 'ManageMessages']
-            },
             {
               role: '@everyone',
               allow: ['ViewChannel', 'ReadMessageHistory'],
@@ -100,19 +99,11 @@ async function addRepoCommand(message, args) {
           topic: 'Automated release announcements from GitHub',
           permissions: isPrivate ? [
             {
-              role: 'Founder',
-              allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory', 'ManageMessages']
-            },
-            {
-              role: 'Licensee',
+              role: '@everyone',
               allow: ['ViewChannel', 'ReadMessageHistory'],
               deny: ['SendMessages']
             }
           ] : [
-            {
-              role: 'Founder',
-              allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory', 'ManageMessages']
-            },
             {
               role: '@everyone',
               allow: ['ViewChannel', 'ReadMessageHistory'],
@@ -128,28 +119,12 @@ async function addRepoCommand(message, args) {
       ]
     };
 
-    // Add category-level permissions (Founder always gets access)
+    // Add category-level permissions if private
     if (isPrivate) {
       newCategory.permissions = [
         {
           role: '@everyone',
           deny: ['ViewChannel']
-        },
-        {
-          role: 'Founder',
-          allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory', 'ManageChannels', 'ManageMessages']
-        },
-        {
-          role: 'Licensee',
-          allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory']
-        }
-      ];
-    } else {
-      // Public repos - Founder still gets admin access
-      newCategory.permissions = [
-        {
-          role: 'Founder',
-          allow: ['ViewChannel', 'SendMessages', 'ReadMessageHistory', 'ManageChannels', 'ManageMessages']
         }
       ];
     }
@@ -170,9 +145,9 @@ async function addRepoCommand(message, args) {
     await message.reply(
       `✅ Repository "${repoName}" added to configuration!\n` +
       `**GitHub Repo**: ${repoName}\n` +
-      `**Type**: ${isPrivate ? 'Private (Licensee only)' : 'Public'}\n` +
+      `**Type**: ${isPrivate ? 'Private' : 'Public'}\n` +
       `**Channels**: ${prefix}-general, ${prefix}-feature-requests, ${prefix}-bug-reports, ${prefix}-commits, ${prefix}-releases, ${prefix}-discussions\n\n` +
-      `Run \`!setup\` to create the Discord channels, then restart the bot to enable GitHub issue creation.`
+      `Run \`!setup\` to create the Discord channels.`
     );
 
   } catch (error) {
@@ -189,7 +164,7 @@ async function removeRepoCommand(message, args) {
 
   // Usage: !removerepo <repo-prefix>
   if (args.length < 1) {
-    return message.reply('Usage: `!removerepo <repo-prefix>`\nExample: `!removerepo myproject`');
+    return message.reply('Usage: `!removerepo <repo-prefix>`\nExample: `!removerepo neonladder`');
   }
 
   const prefix = args[0].toLowerCase();
@@ -210,7 +185,7 @@ async function removeRepoCommand(message, args) {
 
     await message.reply(
       `✅ Repository configuration removed: ${removed.name}\n\n` +
-      `**Note**: This only removes it from the config. To delete Discord channels, use Discord's interface or run \`!cleanup\`.`
+      `**Note**: This only removes it from the config. To delete Discord channels, use Discord's interface.`
     );
 
   } catch (error) {
@@ -225,22 +200,29 @@ async function listReposCommand(message) {
     const config = await loadConfig();
 
     const repoCategories = config.categories.filter(cat =>
-      !['📢 GENERAL', '🛠️ SUPPORT'].some(name => cat.name.includes(name))
+      cat.name.includes('📦')
     );
 
     if (repoCategories.length === 0) {
       return message.reply('No repositories configured.');
     }
 
-    let response = '**Configured Repositories:**\n\n';
+    const embed = new EmbedBuilder()
+      .setColor('#0099ff')
+      .setTitle('📦 Configured Repositories')
+      .setDescription('List of all configured repository categories');
 
     for (const cat of repoCategories) {
-      const isPrivate = cat.permissions?.some(p => p.role === 'Licensee');
+      const isPrivate = cat.permissions?.some(p => p.role === '@everyone' && p.deny);
       const prefix = cat.channels[0].name.split('-')[0];
-      response += `• **${cat.name}** (${isPrivate ? 'Private' : 'Public'})\n  Prefix: \`${prefix}\`\n`;
+      embed.addFields({
+        name: cat.name,
+        value: `Type: ${isPrivate ? '🔒 Private' : '🌐 Public'}\nPrefix: \`${prefix}-\`\nChannels: ${cat.channels.length}`,
+        inline: true
+      });
     }
 
-    await message.reply(response);
+    await message.reply({ embeds: [embed] });
 
   } catch (error) {
     console.error('Error listing repos:', error);
@@ -299,98 +281,109 @@ async function addRoleCommand(message, args) {
   }
 }
 
+// Determine which repo based on channel name
+function getRepoFromChannel(channelName) {
+  const prefix = channelName.split('-')[0];
+  const envKey = `${prefix.toUpperCase()}_REPO`;
+  return process.env[envKey] || null;
+}
+
+// Determine issue type from channel name
+function getIssueTypeFromChannel(channelName) {
+  if (channelName.includes('feature-request')) {
+    return 'feature';
+  } else if (channelName.includes('bug-report')) {
+    return 'bug';
+  }
+  return null;
+}
+
+// Create GitHub issue from Discord message
+async function createGitHubIssue(repo, title, body, issueType, author) {
+  const labels = issueType === 'feature' ? ['enhancement'] : ['bug'];
+  const issueBody = `${body}\n\n---\n*Reported by ${author} via Discord*`;
+
+  try {
+    const response = await octokit.rest.issues.create({
+      owner: GITHUB_OWNER,
+      repo: repo,
+      title: title,
+      body: issueBody,
+      labels: labels,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Error creating GitHub issue:', error);
+    throw error;
+  }
+}
+
+// Fetch README from GitHub repo
+async function fetchRepoReadme(repoName) {
+  try {
+    const response = await octokit.rest.repos.getReadme({
+      owner: GITHUB_OWNER,
+      repo: repoName,
+    });
+
+    // Decode base64 content
+    const content = Buffer.from(response.data.content, 'base64').toString('utf-8');
+    return content;
+  } catch (error) {
+    console.error(`Error fetching README for ${repoName}:`, error.message);
+    throw error;
+  }
+}
+
+// Convert GitHub markdown to Discord-friendly format
+function convertMarkdownToDiscord(markdown) {
+  let discord = markdown;
+
+  // Convert headers to bold
+  discord = discord.replace(/^### (.*$)/gim, '**$1**');
+  discord = discord.replace(/^## (.*$)/gim, '**__$1__**');
+  discord = discord.replace(/^# (.*$)/gim, '**__$1__**');
+
+  // Remove HTML comments
+  discord = discord.replace(/<!--[\s\S]*?-->/g, '');
+
+  // Convert GitHub badges/images to just links
+  discord = discord.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '[$1]($2)');
+
+  return discord.trim();
+}
+
 // Help command
 async function helpCommand(message) {
-  const isAdmin = message.member.permissions.has('Administrator') ||
-                  message.member.roles.cache.some(role => role.name === 'Founder');
+  const isAdminUser = isAdmin(message.member);
 
-  const helpText = `
-# 🤖 irsik Software Bot - Help Guide
+  const helpEmbed = new EmbedBuilder()
+    .setColor('#FFD700')
+    .setTitle('🤖 NeonLadder Bot - Help')
+    .setDescription('Here are the available commands and features:')
+    .addFields(
+      { name: '💬 Mention Bot', value: 'Tag the bot with `@NeonLadder Bot <question>` to chat with Claude AI', inline: false },
+      { name: '🎮 Slash Commands', value: '`/askgpt` - Ask GPT\n`/readme` - Fetch repo README\n`/feature-request` - Submit feature request\n`/purge` - Delete messages (Admin)', inline: false },
+      { name: '⚙️ Bot Commands', value: '`!ping` - Check latency\n`!clear` - Clear conversation\n`!help` - This message\n`!listrepos` - List configured repos', inline: false }
+    );
 
-Hi ${message.author.username}! I'm your Discord assistant for managing repositories, creating GitHub issues, and chatting with Claude AI.
+  if (isAdminUser) {
+    helpEmbed.addFields(
+      { name: '🔧 Admin: Repo Management', value: '`!addrepo <name> [public|private]` - Add repo category\n`!removerepo <prefix>` - Remove repo\n`!setup` - Create Discord channels from config', inline: false },
+      { name: '👥 Admin: Other', value: '`!addrole <name> <color> [yes/no] [yes/no]` - Add role\n`!purge [user]` - Delete messages', inline: false }
+    );
+  }
 
----
+  helpEmbed.addFields(
+    { name: '🐛 Create GitHub Issues', value: 'Tag bot in `*-feature-requests` or `*-bug-reports` channels to create GitHub issues', inline: false },
+    { name: '📄 Fetch README', value: 'Tag bot with `@bot readme <repo-name>` to fetch repository README', inline: false }
+  );
 
-## 💬 Talk to Me!
+  helpEmbed.setFooter({ text: 'NeonLadder Development Assistant' })
+    .setTimestamp();
 
-**Tag me anywhere:** \`@${message.guild.members.me.displayName} <your question>\`
-${isAdmin ? '✅ **You have admin access** - I can execute commands, use GitHub CLI, and more!' : '👀 You can ask me questions, but I can\'t execute commands (admin/Founder only)'}
-
-**Examples:**
-• \`@${message.guild.members.me.displayName} What's in the QiFlow codebase?\`
-• \`@${message.guild.members.me.displayName} readme QiFlow\` - Fetch README from any repo
-• \`@${message.guild.members.me.displayName} Help me understand this feature\`
-
-**In repo channels** (like #qiflow-general), I automatically know which repo we're talking about!
-
----
-
-## 🐛 Create GitHub Issues
-
-**Tag me in \`feature-requests\` or \`bug-reports\` channels:**
-\`@${message.guild.members.me.displayName} <issue title>
-<detailed description>\`
-
-I'll automatically create a GitHub issue with proper labels!
-
----
-
-## ⚙️ Basic Commands
-
-\`!ping\` - Check if I'm alive (and my latency)
-\`!help\` - Show this help message
-\`!listrepos\` - List all configured repositories
-${isAdmin ? '\n**Admin Commands:**' : ''}
-${isAdmin ? '\`!clear\` or \`!reset\` - Clear conversation history for this channel' : ''}
-${isAdmin ? '\`!purge [username]\` - Delete all messages from a user (defaults to bot)' : ''}
-${isAdmin ? '\`!setup\` - Sync Discord server with configuration (creates/updates channels & roles)' : ''}
-
-${isAdmin ? `---
-
-## 🔧 Admin: Repository Management
-
-\`!addrepo <name> [public|private]\` - Add a new repository to Discord
-\`!removerepo <prefix>\` - Remove a repository from config
-
-**Examples:**
-\`!addrepo MyAwesomeProject\` - Creates public repo channels
-\`!addrepo SecretSauce private\` - Creates private repo (Licensee only)
-
-Each repo gets: \`-general\`, \`-feature-requests\`, \`-bug-reports\`, \`-commits\`, \`-releases\`, \`-discussions\`
-
----
-
-## 👥 Admin: Role Management
-
-\`!addrole <name> <color> [mentionable] [hoisted]\`
-
-**Example:**
-\`!addrole Contributor #00FF00 yes no\` - Creates a green, mentionable role
-
----
-
-## 🧹 Admin: Message Management
-
-\`!purge\` - Delete all bot messages in current channel
-\`!purge @User\` - Delete all messages from a specific user
-\`!purge Username\` - Also works with username (no @)
-
-**Be careful!** This can't be undone. Messages are deleted one by one to respect Discord's rate limits.
-` : ''}
----
-
-## 🎯 Tips
-
-• I'm powered by Claude AI using your Claude Code CLI subscription
-• I have full access to repository code when chatting in repo channels
-• Founder role gives you full admin access to all my features
-• I automatically post commit and release notifications from GitHub
-• Use \`!clear\` if you want to start a fresh conversation with me
-
-**Need more help?** Just ask! I'm here to assist with anything related to the irsik Software projects.
-  `.trim();
-
-  await message.reply(helpText);
+  await message.reply({ embeds: [helpEmbed] });
 }
 
 module.exports = {
@@ -399,5 +392,10 @@ module.exports = {
   removeRepoCommand,
   listReposCommand,
   addRoleCommand,
+  getRepoFromChannel,
+  getIssueTypeFromChannel,
+  createGitHubIssue,
+  fetchRepoReadme,
+  convertMarkdownToDiscord,
   helpCommand,
 };

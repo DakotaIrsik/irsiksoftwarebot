@@ -1,163 +1,234 @@
-# irsik Software Discord Bot
+# NeonLadder Discord Bot
 
-Infrastructure as Code (IaC) Discord bot for managing the irsik software Discord server with full GitHub integration.
+Discord bot for NeonLadder game development with AI integrations, GitHub workflows, and modular permission system.
 
-## Features
-
-- **Infrastructure as Code**: Discord server structure defined in `config/discord-structure.json`
-- **Automatic Server Setup**: Create categories, channels, and roles programmatically
-- **GitHub Issue Creation**: Tag the bot in feature-request or bug-report channels to create GitHub issues
-- **GitHub Webhooks**: Automatic commit and release notifications in Discord
-- **Role-Based Access**: Private QiFlow sections for licensees only
-- **Windows Service**: Runs 24/7 as a background service
-
-## Setup
-
-### 1. Create Discord Bot
-
-1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
-2. Create a new application
-3. Go to "Bot" section and create a bot
-4. Enable these Privileged Gateway Intents:
-   - Server Members Intent
-   - Message Content Intent
-5. Copy the bot token
-6. Invite bot to your server with these permissions:
-   - Manage Roles
-   - Manage Channels
-   - Send Messages
-   - Embed Links
-   - Read Message History
-
-### 2. Create GitHub Personal Access Token
-
-1. Go to [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens)
-2. Generate new token (classic) with these scopes:
-   - `repo` (full control of private repositories)
-   - `public_repo` (access to public repositories)
-3. Copy the token
-
-### 3. Configure Environment
-
-```bash
-# Copy the example environment file
-cp .env.example .env
-
-# Edit .env with your values
-```
-
-Required environment variables:
-- `DISCORD_TOKEN`: Your Discord bot token
-- `DISCORD_GUILD_ID`: Your Discord server ID (enable Developer Mode in Discord to copy server ID)
-- `GITHUB_TOKEN`: Your GitHub personal access token
-- `GITHUB_OWNER`: Your GitHub username (default: DakotaIrsik)
-- `WEBHOOK_SECRET`: Secret for GitHub webhook validation (generate a random string)
-
-### 4. Install Dependencies
+## Quick Start
 
 ```bash
 npm install
-```
-
-### 5. Run Initial Setup
-
-Run the bot once to set up the Discord server:
-
-```bash
+cp .env.example .env  # Fill in your tokens
 npm start
 ```
 
-In Discord, type `!setup` (requires Administrator permission) to create all categories, channels, and roles according to the IaC configuration.
+## Features
 
-### 6. Configure GitHub Webhooks
+### AI Integrations
+- **GPT-5 Nano** - `/askgpt` - Cheap, fast responses ($0.05/$0.40 per M tokens)
+- **Claude AI** - `@mention bot` - Deep contextual understanding via Claude CLI
 
-For each repository (QiFlow, QiFlowGo):
+### GitHub Integration
+- `/readme` - Auto-fetch README from current channel's repo
+- `/feature-request` - Submit feature with priority (CRITICAL → LOW)
+  - URGENT/CRITICAL require admin approval
+  - Auto-creates GitHub issues with labels
+- `@bot` in feature-requests/bug-reports channels creates GitHub issues
 
-1. Go to repository Settings > Webhooks > Add webhook
-2. Set Payload URL: `http://your-server-ip:3000/webhook/github`
-3. Set Content type: `application/json`
-4. Set Secret: Use the same value as `WEBHOOK_SECRET` in `.env`
-5. Select events:
-   - Push events
-   - Releases
-6. Save webhook
+### Admin Commands
+- `/purge` - Silent message deletion (ephemeral, no trace)
+- `/addrepo` / `/removerepo` - Manage repo categories
+- `/addrole` - Create Discord roles
+- `/setup` - Build server structure from config
 
-**Note**: You'll need to expose port 3000 to the internet or use a service like ngrok for testing.
+### Utility
+- `/ping` - Check latency
+- `/clear` - Clear conversation history
+- `/help` - Dynamic help (shows admin commands only to admins)
+- `/listrepos` - List configured repositories
 
-### 7. Install as Windows Service (Optional)
+## Configuration
 
-To run the bot 24/7 as a Windows service:
+### Environment Variables
 
+```env
+# Required
+DISCORD_TOKEN=your_bot_token
+DISCORD_APPLICATION_ID=your_app_id
+
+# Optional: AI Services
+OPENAI_API_KEY=sk-...                    # For /askgpt
+# Claude CLI must be installed separately for @mentions
+
+# Optional: GitHub
+GITHUB_TOKEN=ghp_...                     # For private repos
+GITHUB_OWNER=irsiksoftware               # Your GitHub org/user
+
+# Optional: Webhooks
+ENABLE_WEBHOOKS=true
+WEBHOOK_PORT=3000
+WEBHOOK_SECRET=your_webhook_secret
+```
+
+### Permissions System
+
+Control commands per server/channel/role in `config/permissions.json`:
+
+```json
+{
+  "servers": {
+    "default": {
+      "enabled": false,              // New servers disabled by default
+      "commands": []
+    },
+    "YOUR_SERVER_ID": {
+      "name": "Your Server",
+      "enabled": true,
+      "commands": {
+        "askgpt": {
+          "enabled": true,
+          "channels": ["*"],         // All channels
+          "roles": ["*"]             // All roles
+        },
+        "feature-request": {
+          "enabled": true,
+          "channels": ["*-feature-requests"],  // Wildcard matching
+          "roles": ["*"]
+        },
+        "purge": {
+          "enabled": true,
+          "channels": ["*"],
+          "roles": ["Founder", "Administrator"],
+          "requireAdmin": true       // Requires Discord admin permission
+        }
+      }
+    }
+  },
+  "globalAdminRoles": ["Founder", "Administrator"]
+}
+```
+
+**Get your server ID:**
 ```bash
-npm run install-service
+node -e "require('dotenv').config(); const { Client, GatewayIntentBits } = require('discord.js'); const client = new Client({ intents: [GatewayIntentBits.Guilds] }); client.once('ready', () => { client.guilds.cache.forEach(g => console.log(g.id + ' - ' + g.name)); client.destroy(); }); client.login(process.env.DISCORD_TOKEN);"
 ```
 
-The bot will automatically start on system boot. To uninstall:
-
-```bash
-npm run uninstall-service
-```
-
-## Usage
-
-### Bot Commands
-
-- `!setup` - Set up Discord server structure (Admin only)
-- `!ping` - Check bot latency
-
-### Creating GitHub Issues
-
-In any feature-request or bug-report channel, mention the bot with your issue:
+## Architecture
 
 ```
-@irsik Software Bot Add dark mode support
-
-Would be great to have a dark theme option in the settings.
-```
-
-The bot will:
-1. Create a GitHub issue in the appropriate repository
-2. Apply labels (enhancement/bug)
-3. Reply with the issue URL
-
-### Webhook Notifications
-
-The bot automatically posts to these channels:
-- `#qiflowgo-commits` - QiFlowGo commit feed
-- `#qiflowgo-releases` - QiFlowGo release announcements
-- `#qiflow-commits` - QiFlow commit feed (Licensee only)
-- `#qiflow-releases` - QiFlow release announcements (Licensee only)
-
-## Server Structure
-
-The Discord server structure is defined in `config/discord-structure.json` and includes:
-
-- **GENERAL** - Announcements, general chat, introductions
-- **QiFlowGo** - Public project channels (general, feature requests, bugs, commits, releases, discussions)
-- **QiFlow** - Private project channels for licensees only (same structure as QiFlowGo)
-- **SUPPORT** - Help and community support
-
-## Modifying Server Structure
-
-Edit `config/discord-structure.json` and run `!setup` again to apply changes. The bot will create new channels/roles but won't delete existing ones.
-
-## Project Structure
-
-```
-irsiksoftwarebot/
-├── config/
-│   └── discord-structure.json    # IaC configuration
-├── src/
-│   ├── bot.js                    # Main bot logic
-│   └── webhooks.js               # GitHub webhook server
+src/
 ├── index.js                      # Entry point
-├── install-service.js            # Windows service installer
-├── uninstall-service.js          # Windows service uninstaller
-├── .env                          # Environment variables (gitignored)
-├── .env.example                  # Environment template
-└── package.json
+├── client/
+│   └── DiscordClient.js          # Bot initialization & command registration
+├── commands/                     # Auto-loaded slash commands
+│   ├── index.js                  # Command loader
+│   ├── askgpt.js
+│   ├── readme.js
+│   ├── feature-request.js
+│   └── ... (13 commands total)
+├── handlers/
+│   ├── interactionHandler.js    # Slash command execution
+│   └── messageHandler.js        # @mentions, Claude AI integration
+├── services/
+│   ├── permissions.js           # Permission checking
+│   ├── openai.js                # GPT integration
+│   └── github.js                # Octokit wrapper
+├── utils/
+│   └── embed.js                 # Reusable embed builders
+└── config/
+    ├── permissions.json         # Server/command permissions
+    └── discord-structure.json   # Server setup template
+```
+
+### Design Principles
+- **DRY**: No duplicate code, reusable services
+- **Modular**: Each command is isolated, auto-discovered
+- **Secure**: Permission-first, default-deny for new servers
+- **Extensible**: Add commands by creating files in `src/commands/`
+
+## Adding Commands
+
+Create `src/commands/mycommand.js`:
+
+```javascript
+const { SlashCommandBuilder } = require('discord.js');
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('mycommand')
+    .setDescription('My command description'),
+
+  async execute(interaction) {
+    await interaction.reply('Hello!');
+  }
+};
+```
+
+Commands are automatically loaded and registered.
+
+## Special Features
+
+### Smart Repo Detection
+Automatically detects repo from Discord channel category:
+- Channel: `#qiflow-general`
+- Category: `📦 QiFlow` → Strips emojis → `QiFlow`
+- Fetches: `github.com/irsiksoftware/QiFlow/README.md`
+
+### Feature Request Workflow
+1. `/feature-request title:"..." description:"..." priority:URGENT`
+2. Bot posts embed with ✅ reaction
+3. Admin reacts ✅ within 24 hours → Creates GitHub issue
+4. Timeout → Request cancelled
+
+### Silent Purge
+Uses ephemeral deferred reply + deleteReply() for completely invisible operation.
+
+## Development
+
+### Project Structure
+- **Entry**: `src/index.js` (set in package.json)
+- **Old Files**: `bot.js`, `commands.js` (legacy, can be deleted after testing)
+- **Docs**: `src/README.md` (developer guide for architecture)
+
+### Adding Services
+Create `src/services/myservice.js` and import where needed. Services should be stateless and reusable.
+
+### Testing
+```bash
+npm start  # Starts bot, auto-registers commands
+```
+
+Test in Discord:
+1. `/ping` - Verify bot is online
+2. `/help` - Check commands load correctly
+3. `/askgpt test question` - Verify OpenAI integration
+4. `@bot hello` - Verify Claude integration (requires Claude CLI)
+
+## Troubleshooting
+
+### Commands not showing
+- Wait 1-5 minutes for Discord to sync commands
+- Check bot has `applications.commands` scope
+- Verify server ID in `config/permissions.json`
+
+### Permission errors
+- Ensure server is `enabled: true` in permissions.json
+- Check command is enabled for your server
+- Verify channel matches pattern (e.g., `*-feature-requests`)
+- Confirm user has required roles
+
+### OpenAI errors
+- Verify `OPENAI_API_KEY` in .env
+- Check model is `gpt-5-nano` in `src/services/openai.js`
+- Ensure sufficient API credits
+
+### GitHub errors
+- Private repos need `GITHUB_TOKEN` with repo access
+- Public repos work without token
+- Check `GITHUB_OWNER` is set correctly
+
+## Deployment
+
+### Railway (Recommended)
+1. Push to GitHub
+2. Connect Railway to repo
+3. Set environment variables in dashboard
+4. Auto-deploys on push
+
+### Self-Hosted
+```bash
+npm install
+npm start  # Or use PM2: pm2 start src/index.js --name neonladder-bot
 ```
 
 ## License
 
-ISC
+Built for NeonLadder Unity 2.5D roguelite platformer project.

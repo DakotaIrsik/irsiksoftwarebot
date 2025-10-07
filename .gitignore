@@ -1,4 +1,9 @@
-node_modules/
 .env
+node_modules/
 *.log
-daemon/
+bot-*.js
+test-*.js
+commands.json
+railway.json
+start-bot.bat
+discord-exports/
